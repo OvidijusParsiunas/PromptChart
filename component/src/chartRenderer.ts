@@ -1,22 +1,24 @@
+import {ChartResponse} from './types/response';
+import {ChartSpec} from './types/chart';
 import {
-  Chart,
-  CategoryScale,
-  LinearScale,
-  BarController,
-  BarElement,
-  LineController,
-  LineElement,
-  PointElement,
-  PieController,
+  type ChartConfiguration,
   DoughnutController,
-  ArcElement,
   ScatterController,
+  LineController,
+  type ChartType,
+  CategoryScale,
+  BarController,
+  PieController,
+  PointElement,
+  LinearScale,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Tooltip,
   Filler,
   Legend,
+  Chart,
   Title,
-  Tooltip,
-  type ChartConfiguration,
-  type ChartType,
 } from 'chart.js';
 
 // Register Chart.js components
@@ -38,47 +40,9 @@ Chart.register(
   Tooltip
 );
 
-export interface ChartSpec {
-  type: string;
-  title: string;
-  xAxis?: {
-    label?: string;
-    type?: string;
-  };
-  yAxis?: {
-    label?: string;
-    type?: string;
-  };
-  legend?: {
-    position?: 'top' | 'bottom' | 'left' | 'right';
-    display?: boolean;
-  };
-}
-
-export interface ChartData {
-  labels: string[];
-  datasets: Array<{
-    label: string;
-    data: number[];
-    backgroundColor?: string | string[];
-    borderColor?: string | string[];
-    borderWidth?: number;
-  }>;
-}
-
-export interface ChartResponse {
-  chartSpec: ChartSpec;
-  data: ChartData;
-  metadata?: {
-    generatedAt: string;
-    dataset: string;
-    recordCount: number;
-  };
-}
-
 export class ChartRenderer {
   private chart: Chart | null = null;
-  private canvas: HTMLCanvasElement;
+  private readonly canvas: HTMLCanvasElement;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;

@@ -1,22 +1,35 @@
 {
   "root": true,
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
   "extends": [
     "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2020,
-    "sourceType": "module"
+    "project": "tsconfig.json"
   },
+  "plugins": ["@typescript-eslint"],
   "env": {
-    "browser": true,
-    "es2020": true
+    "browser": true
   },
   "rules": {
-    "@typescript-eslint/no-explicit-any": "warn",
+    "no-prototype-builtins": "off",
+    "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-unused-vars": ["error", {"argsIgnorePattern": "^_"}]
-  }
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", {"argsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_"}],
+    "max-len": ["error", {"code": 123}],
+    "eqeqeq": "warn",
+    "no-throw-literal": "warn",
+    "semi": "warn",
+    "prefer-template": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "@typescript-eslint/prefer-readonly": "error"
+  },
+  "ignorePatterns": ["vite.config.ts"]
 }

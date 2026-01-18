@@ -1,6 +1,14 @@
-import {ChartRenderer, type ChartResponse} from './chartRenderer.js';
+import {RequestInterceptor, ResponseInterceptor, RequestDetails} from './types/interceptors.js';
+import {WebComponentStyleUtils} from './utils/webComponent/webComponentStyleUtils.js';
+import {ChartResponseInput, ChartResponse} from './types/response.js';
 import {InternalHTML} from './utils/webComponent/internalHTML.js';
+import {GoogleFont} from './utils/webComponent/googleFont.js';
+import {DemoDataGenerator} from './demoDataGenerator.js';
 import {Property} from './utils/decorators/property.js';
+import {ChartRenderer} from './chartRenderer.js';
+import {StateRenderer} from './stateRenderer.js';
+import {CustomStyle} from './types/style.js';
+import {Connect} from './types/connect.js';
 import {styles} from './styles.js';
 
 /**
@@ -10,15 +18,20 @@ import {styles} from './styles.js';
  *
  * @example
  * ```html
- * <prompt-chart
- *   endpoint="http://localhost:3000/api/chart"
- *   prompt="Show monthly sales for 2024"
- * ></prompt-chart>
+ * <prompt-chart prompt="Show monthly sales for 2024"></prompt-chart>
+ *
+ * <script>
+ *   document.querySelector('prompt-chart').connect = {
+ *     url: 'http://localhost:3000/api/chart',
+ *     method: 'POST',
+ *     headers: { 'Authorization': 'Bearer token' }
+ *   };
+ * </script>
  * ```
  */
 export class PromptChart extends InternalHTML {
-  @Property('string')
-  endpoint?: string;
+  @Property('object')
+  connect?: Connect;
 
   @Property('string')
   prompt?: string;
@@ -26,32 +39,62 @@ export class PromptChart extends InternalHTML {
   @Property('boolean')
   autoFetch?: boolean;
 
+  @Property('object')
+  containerStyle?: CustomStyle;
+
   @Property('function')
-  onChartLoaded?: () => void;
+  onChartLoaded?: (data: ChartResponseInput) => void;
 
   @Property('function')
   onChartError?: () => void;
 
+  @Property('function')
+  requestInterceptor?: RequestInterceptor;
+
+  @Property('function')
+  responseInterceptor?: ResponseInterceptor;
+
   @Property('boolean')
   demo?: boolean;
 
-  private _shadow: ShadowRoot;
-  private _renderer: ChartRenderer | null = null;
+  @Property('object')
+  data?: ChartResponseInput;
+
+  _hasBeenRendered = false;
+
+  private readonly _shadow: ShadowRoot;
+  private readonly _stateRenderer: StateRenderer;
+  private readonly _demoDataGenerator: DemoDataGenerator;
   private _abortController: AbortController | null = null;
-  private _container: HTMLDivElement;
 
   constructor() {
     super();
     this._shadow = this.attachShadow({mode: 'open'});
-    this._container = document.createElement('div');
-    this._container.className = 'prompt-chart-container';
+    const container = document.createElement('div');
+    container.className = 'prompt-chart-container';
     this._shadow.innerHTML = `<style>${styles}</style>`;
-    this._shadow.appendChild(this._container);
-    this._renderEmptyState();
+    this._shadow.appendChild(container);
+
+    this._stateRenderer = new StateRenderer(container);
+    this._demoDataGenerator = new DemoDataGenerator();
+    this._stateRenderer.renderEmptyState();
+    setTimeout(() => {
+      // if user has not set anything (to cause onRender to execute), force it
+      if (!this._hasBeenRendered) this.onRender();
+    }, 20); // rendering takes time, hence this is a high value to be safe
+  }
+
+  // prettier-ignore
+  override onRender() {
+    GoogleFont.attemptAppendStyleSheetToHead(this.style);
+    WebComponentStyleUtils.applyDefaultStyleToComponent(this.style, this.containerStyle);
+    this._hasBeenRendered = true;
   }
 
   connectedCallback(): void {
-    if (this.autoFetch && this.prompt && (this.endpoint || this.demo)) {
+    if (this.data) {
+      this._renderData();
+    } else if (this.autoFetch && this.prompt && (this.connect?.url || this.demo)) {
       this.fetchChart();
     }
   }
@@ -60,10 +103,11 @@ export class PromptChart extends InternalHTML {
     this._cleanup();
   }
 
-  override onPropertyChange(property: string, _value: unknown): void {
-    if (property === 'prompt' && this.autoFetch && this.prompt && (this.endpoint || this.demo)) {
-      this.fetchChart();
-    }
+  private _renderData(): void {
+    if (!this.data) return;
+    this._stateRenderer.renderChart(this.data);
+    this.dispatchEvent(new CustomEvent('chart-loaded', {detail: this.data, bubbles: true, composed: true}));
+    this.onChartLoaded?.(this.data);
   }
 
   /**
@@ -71,41 +115,61 @@ export class PromptChart extends InternalHTML {
    */
   async fetchChart(): Promise<void> {
     if (!this.prompt) {
-      this._showError('Missing prompt');
+      this._stateRenderer.showError('Missing prompt', () => this.fetchChart());
       return;
     }
 
-    if (!this.demo && !this.endpoint) {
-      this._showError('Missing endpoint');
+    if (!this.demo && !this.connect?.url) {
+      this._stateRenderer.showError('Missing connect.url', () => this.fetchChart());
       return;
     }
 
-    // Demo mode: generate mock chart data
     if (this.demo) {
-      this._showLoading();
-
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const data = this._generateDemoData(this.prompt);
-      this._renderChart(data);
-
-      this.dispatchEvent(new CustomEvent('chart-loaded', {detail: data, bubbles: true, composed: true}));
-      this.onChartLoaded?.();
+      await this._fetchDemoChart();
       return;
     }
 
+    await this._fetchRemoteChart();
+  }
+
+  private async _fetchDemoChart(): Promise<void> {
+    this._stateRenderer.showLoading();
+
+    // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const data = this._demoDataGenerator.generate(this.prompt!);
+    this._stateRenderer.renderChart(data);
+
+    this.dispatchEvent(new CustomEvent('chart-loaded', {detail: data, bubbles: true, composed: true}));
+    this.onChartLoaded?.(data);
+  }
+
+  private async _fetchRemoteChart(): Promise<void> {
     // Cancel any pending request
     this._abortController?.abort();
     this._abortController = new AbortController();
 
-    this._showLoading();
+    this._stateRenderer.showLoading();
 
     try {
-      const response = await fetch(this.endpoint!, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({prompt: this.prompt}),
+      // Build initial request details from connect config
+      let requestDetails: RequestDetails = {
+        endpoint: this.connect!.url!,
+        method: this.connect!.method ?? 'POST',
+        headers: {'Content-Type': 'application/json', ...this.connect!.headers},
+        body: {prompt: this.prompt},
+      };
+
+      // Apply request interceptor if provided
+      if (this.requestInterceptor) {
+        requestDetails = await this.requestInterceptor(requestDetails);
+      }
+
+      const response = await fetch(requestDetails.endpoint, {
+        method: requestDetails.method,
+        headers: requestDetails.headers,
+        body: JSON.stringify(requestDetails.body),
         signal: this._abortController.signal,
       });
 
@@ -114,193 +178,33 @@ export class PromptChart extends InternalHTML {
         throw new Error(error.error || `HTTP ${response.status}`);
       }
 
-      const data: ChartResponse = await response.json();
-      this._renderChart(data);
+      const responseBody: unknown = await response.json();
 
-      // Dispatch success event
+      // Apply response interceptor if provided, otherwise use response directly
+      const data: ChartResponseInput = this.responseInterceptor
+        ? await this.responseInterceptor(responseBody)
+        : (responseBody as ChartResponseInput);
+
+      this._stateRenderer.renderChart(data);
+
       this.dispatchEvent(new CustomEvent('chart-loaded', {detail: data, bubbles: true, composed: true}));
-      this.onChartLoaded?.();
+      this.onChartLoaded?.(data);
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         return; // Request was cancelled
       }
 
       const message = err instanceof Error ? err.message : 'Unknown error';
-      this._showError(message);
+      this._stateRenderer.showError(message, () => this.fetchChart());
 
-      // Dispatch error event
       this.dispatchEvent(new CustomEvent('chart-error', {detail: {error: message}, bubbles: true, composed: true}));
       this.onChartError?.();
     }
   }
 
-  private _renderEmptyState(): void {
-    this._container.innerHTML = `
-      <div class="empty-state">
-        <span>Set a prompt to generate a chart</span>
-      </div>
-    `;
-  }
-
-  private _showLoading(): void {
-    this._container.innerHTML = `
-      <div class="loading-overlay">
-        <div class="spinner"></div>
-        <div class="loading-text">Generating chart...</div>
-      </div>
-      <div class="chart-wrapper">
-        <canvas></canvas>
-      </div>
-    `;
-  }
-
-  private _showError(message: string): void {
-    this._container.innerHTML = `
-      <div class="error-container">
-        <div class="error-icon">!</div>
-        <div class="error-message">${this._escapeHtml(message)}</div>
-        <button class="retry-button">Retry</button>
-      </div>
-    `;
-
-    const retryButton = this._container.querySelector('.retry-button');
-    retryButton?.addEventListener('click', () => this.fetchChart());
-  }
-
-  private _renderChart(response: ChartResponse): void {
-    this._container.innerHTML = `
-      <div class="chart-wrapper">
-        <canvas></canvas>
-      </div>
-    `;
-
-    const canvas = this._container.querySelector('canvas');
-    if (!canvas) return;
-
-    this._renderer?.destroy();
-    this._renderer = new ChartRenderer(canvas);
-    this._renderer.render(response);
-  }
-
-  private _generateDemoData(prompt: string): ChartResponse {
-    const lowerPrompt = prompt.toLowerCase();
-
-    // Detect chart type from prompt
-    let chartType = 'bar';
-    if (lowerPrompt.includes('pie')) chartType = 'pie';
-    else if (lowerPrompt.includes('doughnut') || lowerPrompt.includes('donut')) chartType = 'doughnut';
-    else if (lowerPrompt.includes('line') || lowerPrompt.includes('trend')) chartType = 'line';
-    else if (lowerPrompt.includes('area')) chartType = 'area';
-    else if (lowerPrompt.includes('scatter')) chartType = 'scatter';
-
-    // Generate title from prompt
-    const title = prompt.charAt(0).toUpperCase() + prompt.slice(1);
-
-    // Demo data presets based on keywords
-    let labels: string[];
-    let datasets: ChartResponse['data']['datasets'];
-    let dataset = 'demo_data';
-
-    if (lowerPrompt.includes('month') || lowerPrompt.includes('year')) {
-      labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      if (lowerPrompt.includes('region')) {
-        datasets = [
-          {
-            label: 'North',
-            data: [65, 78, 90, 81, 96, 105, 110, 102, 95, 88, 92, 108],
-            backgroundColor: '#3b82f6',
-            borderColor: '#3b82f6',
-          },
-          {
-            label: 'South',
-            data: [45, 52, 60, 55, 70, 82, 88, 80, 72, 65, 70, 85],
-            backgroundColor: '#10b981',
-            borderColor: '#10b981',
-          },
-          {
-            label: 'East',
-            data: [35, 40, 48, 45, 55, 62, 68, 60, 55, 50, 52, 65],
-            backgroundColor: '#f59e0b',
-            borderColor: '#f59e0b',
-          },
-        ];
-        dataset = 'sales_by_region';
-      } else {
-        datasets = [
-          {
-            label: 'Value',
-            data: [65, 78, 90, 81, 96, 105, 110, 102, 95, 88, 92, 108],
-            backgroundColor: '#3b82f6',
-            borderColor: '#3b82f6',
-          },
-        ];
-        dataset = 'monthly_data';
-      }
-    } else if (lowerPrompt.includes('product') || lowerPrompt.includes('revenue')) {
-      labels = ['Product A', 'Product B', 'Product C', 'Product D', 'Product E'];
-      const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-      datasets = [
-        {label: 'Revenue', data: [42000, 35000, 28000, 21000, 15000], backgroundColor: colors, borderColor: colors},
-      ];
-      dataset = 'product_revenue';
-    } else if (lowerPrompt.includes('status') || lowerPrompt.includes('order')) {
-      labels = ['Completed', 'Pending', 'Processing', 'Cancelled'];
-      const colors = ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'];
-      datasets = [{label: 'Orders', data: [245, 89, 56, 23], backgroundColor: colors, borderColor: colors}];
-      dataset = 'order_status';
-    } else if (lowerPrompt.includes('signup') || lowerPrompt.includes('user')) {
-      labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      datasets = [
-        {
-          label: 'Signups',
-          data: [120, 145, 180, 220, 290, 350, 420, 480, 520, 580, 650, 720],
-          backgroundColor: '#8b5cf6',
-          borderColor: '#8b5cf6',
-        },
-      ];
-      dataset = 'user_signups';
-      if (!lowerPrompt.includes('bar')) chartType = 'line';
-    } else if (lowerPrompt.includes('profit') || lowerPrompt.includes('top')) {
-      labels = ['Widget Pro', 'Gadget X', 'Tool Master', 'Device Plus', 'Smart Kit'];
-      const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-      datasets = [
-        {label: 'Profit', data: [18500, 15200, 12800, 9500, 7200], backgroundColor: colors, borderColor: colors},
-      ];
-      dataset = 'product_profit';
-    } else {
-      // Default demo data
-      labels = ['Category A', 'Category B', 'Category C', 'Category D', 'Category E'];
-      const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-      datasets = [{label: 'Value', data: [42, 35, 28, 21, 15], backgroundColor: colors, borderColor: colors}];
-    }
-
-    return {
-      chartSpec: {
-        type: chartType,
-        title,
-        xAxis: {label: 'Category'},
-        yAxis: {label: 'Value'},
-        legend: {display: datasets.length > 1 || chartType === 'pie' || chartType === 'doughnut', position: 'top'},
-      },
-      data: {labels, datasets},
-      metadata: {
-        generatedAt: new Date().toISOString(),
-        dataset,
-        recordCount: labels.length,
-      },
-    };
-  }
-
   private _cleanup(): void {
     this._abortController?.abort();
-    this._renderer?.destroy();
-    this._renderer = null;
-  }
-
-  private _escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    this._stateRenderer.destroy();
   }
 }
 
@@ -316,4 +220,4 @@ declare global {
   }
 }
 
-export {ChartRenderer, type ChartResponse};
+export {ChartRenderer, type ChartResponse, type ChartResponseInput};

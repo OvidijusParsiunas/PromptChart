@@ -97,7 +97,7 @@ function App() {
       </section>
 
       <section className="chart-section">
-        <PromptChart ref={chartRef} endpoint="http://localhost:3000/api/chart" />
+        <PromptChart ref={chartRef} connect={{url: 'http://localhost:3000/api/chart'}} />
 
         {metadata && (
           <div className="metadata">

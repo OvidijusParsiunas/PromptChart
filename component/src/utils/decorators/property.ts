@@ -1,30 +1,32 @@
-import {InternalHTML} from '../webComponent/internalHTML.js';
+import {AttributeTypeConverter, AvailableTypes} from '../../types/typeConverters';
+import {GenericObject} from '../../types/object';
+import {TypeConverters} from './typeConverters';
 
-type PropertyType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'function';
-
-export const TypeConverters: Record<PropertyType, (v: string) => unknown> = {
-  string: (value) => value,
-  number: (value) => parseFloat(value),
-  boolean: (value) => value === 'true',
-  object: (value) => JSON.parse(value),
-  array: (value) => JSON.parse(value),
-  function: (value) => new Function('return ' + value)(),
+// _attributes_ and _attributeToProperty_ exist as static props as Property is called only once for each field (below)
+type InternalHTML = {
+  _attributes_: GenericObject<AttributeTypeConverter>;
+  _attributeToProperty_: GenericObject<string>;
 };
 
-export function Property(type: PropertyType = 'string') {
-  return function (target: InternalHTML, propertyKey: string): void {
-    const ctor = target.constructor as typeof InternalHTML;
-
-    // Initialize static maps if needed
-    if (!Object.prototype.hasOwnProperty.call(ctor, '_attributes_')) {
-      ctor._attributes_ = {...ctor._attributes_};
-    }
-    if (!Object.prototype.hasOwnProperty.call(ctor, '_attributeToProperty_')) {
-      ctor._attributeToProperty_ = {...ctor._attributeToProperty_};
-    }
-
-    const attrName = propertyKey.toLowerCase();
-    ctor._attributes_[attrName] = TypeConverters[type];
-    ctor._attributeToProperty_[attrName] = propertyKey;
+// IMPORTANT - these are called ONCE for each property and for multiple component instances
+// used to monitor property changes and automatically view them as attributes
+export function Property(type: AvailableTypes) {
+  return function (target: object, propertyKey: string) {
+    // this is primarily used for the react wrapper to infer properties, but can be put inside a condition
+    // if it is causing issues for other frameworks
+    Object.defineProperty(target, propertyKey, {});
+    // using constructor and not static object in order to not reinstantiate and register the element twice
+    const internalHTML = target.constructor as unknown as InternalHTML;
+    const attributeName = propertyKey.toLocaleLowerCase();
+    internalHTML._attributes_[attributeName] = TypeConverters.attibutes[type];
+    internalHTML._attributeToProperty_[attributeName] = propertyKey;
   };
 }
+
+// for any future refactoring:
+// Note the IMPORTANT message above
+// Property is called before any constructors
+// the target: Object is an instance of InternalHTML and what it is extending it, however the fields defined
+// in those classes do not exist when Property is called and their values should not be used as they will
+// be overwritten by the field definitions when constructor is called. Alternatively create new fields
+// from Property and they will later be present in the class.

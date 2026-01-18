@@ -14,6 +14,22 @@ export const styles = `
   .chart-wrapper {
     width: 100%;
     height: 100%;
+    min-height: 300px;
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    width: 100%;
+    height: 100%;
+  }
+
+  .charts-grid .chart-wrapper {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    background: #fff;
   }
 
   .loading-overlay {
