@@ -1,7 +1,7 @@
 {
-  "name": "@promptchart/backend-node",
+  "name": "@promptchart/example-node-express",
   "version": "0.1.0",
-  "description": "PromptChart Node.js/Express backend",
+  "description": "PromptChart Node.js/Express backend example",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

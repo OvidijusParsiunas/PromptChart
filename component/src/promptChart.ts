@@ -26,6 +26,12 @@ export class PromptChart extends InternalHTML {
   @Property('boolean')
   autoFetch?: boolean;
 
+  @Property('function')
+  onChartLoaded?: () => void;
+
+  @Property('function')
+  onChartError?: () => void;
+
   @Property('boolean')
   demo?: boolean;
 
@@ -84,13 +90,8 @@ export class PromptChart extends InternalHTML {
       const data = this._generateDemoData(this.prompt);
       this._renderChart(data);
 
-      this.dispatchEvent(
-        new CustomEvent('chart-loaded', {
-          detail: data,
-          bubbles: true,
-          composed: true,
-        })
-      );
+      this.dispatchEvent(new CustomEvent('chart-loaded', {detail: data, bubbles: true, composed: true}));
+      this.onChartLoaded?.();
       return;
     }
 
@@ -103,9 +104,7 @@ export class PromptChart extends InternalHTML {
     try {
       const response = await fetch(this.endpoint!, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({prompt: this.prompt}),
         signal: this._abortController.signal,
       });
@@ -119,13 +118,8 @@ export class PromptChart extends InternalHTML {
       this._renderChart(data);
 
       // Dispatch success event
-      this.dispatchEvent(
-        new CustomEvent('chart-loaded', {
-          detail: data,
-          bubbles: true,
-          composed: true,
-        })
-      );
+      this.dispatchEvent(new CustomEvent('chart-loaded', {detail: data, bubbles: true, composed: true}));
+      this.onChartLoaded?.();
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         return; // Request was cancelled
@@ -135,13 +129,8 @@ export class PromptChart extends InternalHTML {
       this._showError(message);
 
       // Dispatch error event
-      this.dispatchEvent(
-        new CustomEvent('chart-error', {
-          detail: {error: message},
-          bubbles: true,
-          composed: true,
-        })
-      );
+      this.dispatchEvent(new CustomEvent('chart-error', {detail: {error: message}, bubbles: true, composed: true}));
+      this.onChartError?.();
     }
   }
 
