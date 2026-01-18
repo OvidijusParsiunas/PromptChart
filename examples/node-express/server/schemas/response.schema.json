@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://promptchart.dev/schemas/response.schema.json",
+  "title": "ChartResponse",
+  "description": "Schema for the API response containing chart data and specification",
+  "type": "object",
+  "required": ["chartSpec", "data"],
+  "additionalProperties": false,
+  "properties": {
+    "chartSpec": {
+      "type": "object",
+      "description": "Chart rendering specification",
+      "required": ["type", "title"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["bar", "line", "pie", "doughnut", "area", "scatter"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "xAxis": {
+          "type": "object",
+          "properties": {
+            "label": { "type": "string" },
+            "type": { "type": "string", "enum": ["category", "time", "linear"] }
+          }
+        },
+        "yAxis": {
+          "type": "object",
+          "properties": {
+            "label": { "type": "string" },
+            "type": { "type": "string", "enum": ["linear", "logarithmic"] }
+          }
+        },
+        "legend": {
+          "type": "object",
+          "properties": {
+            "position": { "type": "string", "enum": ["top", "bottom", "left", "right"] },
+            "display": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "description": "Chart.js compatible data structure",
+      "required": ["labels", "datasets"],
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "data"],
+            "properties": {
+              "label": { "type": "string" },
+              "data": {
+                "type": "array",
+                "items": { "type": "number" }
+              },
+              "backgroundColor": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "type": "array", "items": { "type": "string" } }
+                ]
+              },
+              "borderColor": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "type": "array", "items": { "type": "string" } }
+                ]
+              },
+              "borderWidth": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata about the response",
+      "properties": {
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "dataset": { "type": "string" },
+        "recordCount": { "type": "integer" },
+        "intent": { "$ref": "intent.schema.json" }
+      }
+    }
+  }
+}

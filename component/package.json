@@ -1,0 +1,57 @@
+{
+  "name": "prompt-chart",
+  "version": "0.1.0",
+  "description": "Web component for LLM-driven chart generation",
+  "type": "module",
+  "main": "./dist/promptChart.js",
+  "module": "./dist/promptChart.js",
+  "types": "./dist/promptChart.d.ts",
+  "exports": {
+    ".": "./dist/promptChart.js",
+    "./promptChart": "./dist/promptChart.js"
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "lint": "eslint --fix './src/**/*.ts'",
+    "build": "tsc && vite build",
+    "build:bundle": "npm run lint && tsc && vite build && rollup -c && npm run build:babel",
+    "build:babel": "npm run build:temp && npm run transpile && rimraf dist/promptChartTemp.js",
+    "build:temp": "shx cp dist/promptChart.js dist/promptChartTemp.js",
+    "transpile": "babel dist/promptChartTemp.js --out-file dist/promptChart.js",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
+    "eslint": "^8.57.0",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.34.0",
+    "rollup-plugin-summary": "^2.0.1",
+    "shx": "^0.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.2.0",
+    "vite-plugin-dts": "^4.5.0",
+    "prettier": "^3.2.5"
+  },
+  "keywords": [
+    "web-component",
+    "charts",
+    "llm",
+    "visualization",
+    "chart.js"
+  ],
+  "license": "MIT"
+}

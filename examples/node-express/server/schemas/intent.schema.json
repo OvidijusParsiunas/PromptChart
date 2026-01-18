@@ -1,0 +1,165 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://promptchart.dev/schemas/intent.schema.json",
+  "title": "ChartIntent",
+  "description": "Schema for LLM-generated chart intent specification",
+  "type": "object",
+  "required": ["dataset", "metrics", "chartType"],
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string",
+      "description": "The dataset to query (must be from allowed list)",
+      "enum": ["sales", "users", "products", "orders", "inventory"]
+    },
+    "metrics": {
+      "type": "array",
+      "description": "Metrics to measure/aggregate",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/Metric"
+      }
+    },
+    "dimensions": {
+      "type": "array",
+      "description": "Dimensions to group or slice data by",
+      "items": {
+        "$ref": "#/$defs/Dimension"
+      }
+    },
+    "filters": {
+      "type": "array",
+      "description": "Filters to apply to the data",
+      "items": {
+        "$ref": "#/$defs/Filter"
+      }
+    },
+    "chartType": {
+      "type": "string",
+      "description": "Type of chart to render",
+      "enum": ["bar", "line", "pie", "doughnut", "area", "scatter"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Optional chart title",
+      "maxLength": 200
+    },
+    "sortBy": {
+      "type": "string",
+      "description": "Field to sort results by",
+      "enum": ["value", "label", "date"]
+    },
+    "sortOrder": {
+      "type": "string",
+      "description": "Sort order",
+      "enum": ["asc", "desc"]
+    },
+    "limit": {
+      "type": "integer",
+      "description": "Maximum number of data points",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "$defs": {
+    "Metric": {
+      "type": "object",
+      "required": ["field", "aggregation"],
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Field to measure",
+          "enum": [
+            "amount",
+            "quantity",
+            "price",
+            "count",
+            "revenue",
+            "cost",
+            "profit",
+            "signups",
+            "activeUsers",
+            "sessions"
+          ]
+        },
+        "aggregation": {
+          "type": "string",
+          "description": "Aggregation function",
+          "enum": ["sum", "avg", "min", "max", "count"]
+        },
+        "label": {
+          "type": "string",
+          "description": "Display label for this metric",
+          "maxLength": 100
+        }
+      }
+    },
+    "Dimension": {
+      "type": "object",
+      "required": ["field"],
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Field to group by",
+          "enum": [
+            "date",
+            "month",
+            "quarter",
+            "year",
+            "category",
+            "region",
+            "product",
+            "status",
+            "channel"
+          ]
+        },
+        "granularity": {
+          "type": "string",
+          "description": "Time granularity (for date dimensions)",
+          "enum": ["day", "week", "month", "quarter", "year"]
+        }
+      }
+    },
+    "Filter": {
+      "type": "object",
+      "required": ["field", "operator", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Field to filter on",
+          "enum": [
+            "date",
+            "month",
+            "quarter",
+            "year",
+            "category",
+            "region",
+            "product",
+            "status",
+            "channel",
+            "amount",
+            "quantity",
+            "price"
+          ]
+        },
+        "operator": {
+          "type": "string",
+          "description": "Comparison operator",
+          "enum": ["eq", "neq", "gt", "gte", "lt", "lte", "in", "between"]
+        },
+        "value": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "array", "items": { "type": "string" } },
+            { "type": "array", "items": { "type": "number" } }
+          ],
+          "description": "Filter value(s)"
+        }
+      }
+    }
+  }
+}
