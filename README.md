@@ -26,10 +26,11 @@ promptchart/
 │       └── prompt-chart.ts
 │
 └── examples/
-    └── node-express/       # Complete Node.js example
-        ├── index.html      # Demo page
-        ├── server/         # Express backend (everything included)
-        └── README.md
+    └── node/
+      └── express/       # Complete Node.js example
+          ├── index.html      # Demo page
+          ├── server/         # Express backend (everything included)
+          └── README.md
 ```
 
 ## Quick Start
@@ -45,7 +46,7 @@ npm run build
 ### 2. Run an Example
 
 ```bash
-cd examples/node-express/server
+cd examples/node/express/server
 npm install
 
 # Add your OpenAI API key
@@ -58,7 +59,7 @@ npm run dev
 
 ### 3. Open the Demo
 
-Open `examples/node-express/index.html` in your browser and try:
+Open `examples/node/express/index.html` in your browser and try:
 
 - "Show monthly sales by region"
 - "User signups trend as a line chart"
@@ -71,37 +72,72 @@ Open `examples/node-express/index.html` in your browser and try:
 <script type="module" src="path/to/prompt-chart.js"></script>
 
 <!-- Use it -->
-<prompt-chart endpoint="http://localhost:3000/api/chart" prompt="Show monthly sales" auto-fetch></prompt-chart>
+<prompt-chart prompt="Show monthly sales"></prompt-chart>
+
+<script>
+  document.querySelector('prompt-chart').connect = {
+    url: 'http://localhost:3000/api/chart',
+    method: 'POST',
+    headers: {Authorization: 'Bearer token'},
+  };
+</script>
 ```
 
-### Attributes
+### Properties
 
-| Attribute    | Description                             |
-| ------------ | --------------------------------------- |
-| `endpoint`   | Backend API URL                         |
-| `prompt`     | Natural language chart description      |
-| `auto-fetch` | Automatically fetch when prompt changes |
+| Property              | Type       | Description                                     |
+| --------------------- | ---------- | ----------------------------------------------- |
+| `connect`             | `object`   | Connection config: `{ url, method?, headers? }` |
+| `prompt`              | `string`   | Natural language chart description              |
+| `autoFetch`           | `boolean`  | Automatically fetch when prompt changes         |
+| `data`                | `object`   | Directly set chart data (bypasses fetch)        |
+| `demo`                | `boolean`  | Use demo mode with generated data               |
+| `stateText`           | `object`   | Custom text: `{ empty?, loading?, retry? }`     |
+| `containerStyle`      | `object`   | Custom CSS styles for the container             |
+| `requestInterceptor`  | `function` | Modify request before sending                   |
+| `responseInterceptor` | `function` | Transform response before rendering             |
 
-### Events
+### Events & Callbacks
 
-| Event          | Detail                                |
-| -------------- | ------------------------------------- |
-| `chart-loaded` | Fired when chart renders successfully |
-| `chart-error`  | Fired on error                        |
+| Event/Callback  | Description                    |
+| --------------- | ------------------------------ |
+| `chart-loaded`  | Event fired when chart renders |
+| `chart-error`   | Event fired on error           |
+| `onChartLoaded` | Callback when chart renders    |
+| `onChartError`  | Callback on error              |
 
 ### JavaScript API
 
 ```javascript
 const chart = document.querySelector('prompt-chart');
 
+// Configure connection
+chart.connect = {url: 'http://localhost:3000/api/chart'};
+
 // Set prompt and fetch
 chart.prompt = 'Show sales by category';
 await chart.fetchChart();
 
-// Listen for events
+// Use callbacks
+chart.onChartLoaded = (data) => {
+  console.log('Chart data:', data);
+};
+
+// Or listen for events
 chart.addEventListener('chart-loaded', (e) => {
   console.log('Chart data:', e.detail);
 });
+
+// Use interceptors
+chart.requestInterceptor = (request) => {
+  request.headers['X-Custom-Header'] = 'value';
+  return request;
+};
+
+chart.responseInterceptor = (response) => {
+  // Transform response if needed
+  return response;
+};
 ```
 
 ## API Reference
@@ -167,7 +203,7 @@ All fields are enum-based and validated against a strict JSON Schema.
 
 Each example contains a complete backend. To create your own:
 
-1. Copy an example (e.g., `examples/node-express/`)
+1. Copy an example (e.g., `examples/node/express/`)
 2. Implement the `DataAdapter` interface to connect your data source
 3. Optionally swap the `LLMProvider` for a different LLM
 

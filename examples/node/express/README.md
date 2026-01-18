@@ -5,7 +5,7 @@ A complete Express backend for PromptChart that converts natural language prompt
 ## Structure
 
 ```
-node-express/
+node/express/
 ├── src/
 │   ├── adapters/       # Data adapters (mock data)
 │   ├── llm/            # OpenAI integration
@@ -59,6 +59,7 @@ POST /api/chart
 Generate a chart from a natural language prompt.
 
 **Request:**
+
 ```json
 {
   "prompt": "Show monthly sales by region as a bar chart"
@@ -66,6 +67,7 @@ Generate a chart from a natural language prompt.
 ```
 
 **Response:**
+
 ```json
 {
   "chartSpec": {

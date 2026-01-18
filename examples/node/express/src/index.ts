@@ -2,9 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-import { OpenAIProvider } from './llm/index.js';
-import { MockDataAdapter } from './adapters/index.js';
-import { IntentResolver } from './services/index.js';
+import { OpenAIProvider } from './llm/openai.js';
+import { MockDataAdapter } from './adapters/mock.js';
+import { IntentResolver } from './services/intent-resolver.js';
 import { createChartRouter } from './routes/chart.js';
 
 // Load environment variables

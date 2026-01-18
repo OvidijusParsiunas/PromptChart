@@ -1,7 +1,6 @@
 import type { LLMProvider, IntentContext } from '../llm/types.js';
 import type { DataAdapter } from '../adapters/base.js';
 import type { ChartIntent, ChartResponse, ChartSpec, Granularity } from '../types/index.js';
-import { validateChartIntent, sanitizePrompt } from '../validation/index.js';
 
 // Normalize common LLM output variations
 const GRANULARITY_MAP: Record<string, Granularity> = {
@@ -36,41 +35,28 @@ export class IntentResolver {
    * Process a natural language prompt and return chart data
    */
   async resolve(prompt: string, additionalContext?: Record<string, unknown>): Promise<ChartResponse> {
-    // Sanitize the prompt
-    const sanitizedPrompt = sanitizePrompt(prompt);
-    if (!sanitizedPrompt) {
-      throw new Error('Invalid or empty prompt');
-    }
+    // Build per-dataset context for LLM
+    const datasetNames = this.adapter.getAvailableDatasets();
+    const datasets: Record<string, { metrics: string[]; dimensions: string[] }> = {};
 
-    // Build context for LLM
-    const datasets = this.adapter.getAvailableDatasets();
-    const allMetrics = new Set<string>();
-    const allDimensions = new Set<string>();
-
-    for (const dataset of datasets) {
-      this.adapter.getAvailableMetrics(dataset).forEach(m => allMetrics.add(m));
-      this.adapter.getAvailableDimensions(dataset).forEach(d => allDimensions.add(d));
+    for (const dataset of datasetNames) {
+      datasets[dataset] = {
+        metrics: this.adapter.getAvailableMetrics(dataset),
+        dimensions: this.adapter.getAvailableDimensions(dataset),
+      };
     }
 
     const context: IntentContext = {
-      availableDatasets: datasets,
-      availableMetrics: Array.from(allMetrics),
-      availableDimensions: Array.from(allDimensions),
+      datasets,
       availableChartTypes: ['bar', 'line', 'pie', 'doughnut', 'area', 'scatter'],
       additionalContext,
     };
 
     // Generate intent from LLM
-    const { intent } = await this.llm.generateIntent(sanitizedPrompt, context);
+    const { intent } = await this.llm.generateIntent(prompt, context);
 
-    // Normalize LLM output before validation
+    // Normalize LLM output
     this.normalizeIntent(intent);
-
-    // Validate the intent
-    const validation = validateChartIntent(intent);
-    if (!validation.valid) {
-      throw new Error(`Invalid intent from LLM: ${validation.errors?.join(', ')}`);
-    }
 
     // Execute query against data adapter
     const data = await this.adapter.executeQuery(intent);
@@ -91,7 +77,7 @@ export class IntentResolver {
   }
 
   /**
-   * Normalize LLM output to match expected schema values
+   * Normalize LLM output to match expected values
    */
   private normalizeIntent(intent: ChartIntent): void {
     // Normalize dimension granularities

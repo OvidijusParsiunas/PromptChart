@@ -8,11 +8,15 @@ export interface LLMConfig {
   temperature?: number;
 }
 
+// Per-dataset metadata
+export interface DatasetMetadata {
+  metrics: string[];
+  dimensions: string[];
+}
+
 // Context provided to the LLM for intent generation
 export interface IntentContext {
-  availableDatasets: string[];
-  availableMetrics: string[];
-  availableDimensions: string[];
+  datasets: Record<string, DatasetMetadata>;
   availableChartTypes: string[];
   additionalContext?: Record<string, unknown>;
 }

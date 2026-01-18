@@ -1,6 +1,6 @@
+import type {LLMProvider, LLMConfig, IntentContext, IntentResult} from './types.js';
+import type {ChartIntent} from '../types/index.js';
 import OpenAI from 'openai';
-import type { LLMProvider, LLMConfig, IntentContext, IntentResult } from './types.js';
-import type { ChartIntent } from '../types/index.js';
 
 const SYSTEM_PROMPT = `You are a data visualization assistant. Your task is to convert natural language requests into structured JSON specifications for charts.
 
@@ -29,10 +29,11 @@ You must respond with valid JSON only, no markdown or explanations. The JSON mus
 }
 
 Guidelines:
+- IMPORTANT: Only use metrics and dimensions that belong to the chosen dataset
 - Choose the most appropriate chart type for the data
 - Use line charts for trends over time
 - Use bar charts for comparisons
-- Use pie/doughnut for proportions
+- Use pie/doughnut for proportions (must include a dimension to group by)
 - Infer reasonable defaults when not specified
 - Generate a descriptive title if not provided`;
 
@@ -43,29 +44,33 @@ export class OpenAIProvider implements LLMProvider {
   private temperature: number;
 
   constructor(config: LLMConfig) {
-    this.client = new OpenAI({ apiKey: config.apiKey });
+    this.client = new OpenAI({apiKey: config.apiKey});
     this.model = config.model ?? 'gpt-4o-mini';
     this.maxTokens = config.maxTokens ?? 1000;
     this.temperature = config.temperature ?? 0.1;
   }
 
   async generateIntent(prompt: string, context: IntentContext): Promise<IntentResult> {
-    const contextMessage = `Available context:
-- Datasets: ${context.availableDatasets.join(', ')}
-- Metrics: ${context.availableMetrics.join(', ')}
-- Dimensions: ${context.availableDimensions.join(', ')}
-- Chart types: ${context.availableChartTypes.join(', ')}
+    // Format per-dataset context so LLM knows which metrics/dimensions apply to each dataset
+    const datasetInfo = Object.entries(context.datasets)
+      .map(([name, meta]) => `  ${name}: metrics=[${meta.metrics.join(', ')}], dimensions=[${meta.dimensions.join(', ')}]`)
+      .join('\n');
+
+    const contextMessage = `Available datasets (use ONLY the metrics and dimensions listed for the chosen dataset):
+${datasetInfo}
+
+Chart types: ${context.availableChartTypes.join(', ')}
 ${context.additionalContext ? `\nAdditional context: ${JSON.stringify(context.additionalContext)}` : ''}`;
 
     const response = await this.client.chat.completions.create({
       model: this.model,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: `${contextMessage}\n\nUser request: ${prompt}` },
+        {role: 'system', content: SYSTEM_PROMPT},
+        {role: 'user', content: `${contextMessage}\n\nUser request: ${prompt}`},
       ],
       max_tokens: this.maxTokens,
       temperature: this.temperature,
-      response_format: { type: 'json_object' },
+      response_format: {type: 'json_object'},
     });
 
     const rawResponse = response.choices[0]?.message?.content;

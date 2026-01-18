@@ -8,7 +8,7 @@ Before running this example, make sure you have:
 
 1. Built the core component in `../../component/`
 2. Built the React wrapper in `../../other-packages/react/`
-3. Started the backend server in `../node-express/`
+3. Started the backend server in `../node/express/`
 
 ## Setup
 
@@ -40,7 +40,7 @@ npm install
 In a separate terminal:
 
 ```bash
-cd examples/node-express
+cd examples/node/express
 npm install
 cp .env.example .env
 # Add your OPENAI_API_KEY to .env
@@ -86,23 +86,29 @@ ui/
 
 ## Configuration
 
-The UI connects to the backend at `http://localhost:3000/api/chart`. To change this, update the `endpoint` prop in `App.tsx`:
+The UI connects to the backend at `http://localhost:3000/api/chart`. To change this, update the `connect` property in `App.tsx`:
 
 ```tsx
-<PromptChart
-  ref={chartRef}
-  endpoint="http://your-backend-url/api/chart"
-  // ...
-/>
+// Set connect via ref (object properties must be set this way)
+useEffect(() => {
+  if (chartRef.current) {
+    chartRef.current.connect = {url: 'http://your-backend-url/api/chart'};
+  }
+}, []);
+
+// Then use the component
+<PromptChart ref={chartRef} />;
 ```
 
 ## Troubleshooting
 
 ### Chart not loading
+
 - Make sure the backend server is running on port 3000
 - Check the browser console for CORS errors
 - Verify your OpenAI API key is set in the backend `.env` file
 
 ### Build errors
+
 - Ensure you've built both the core component and React wrapper
 - Try removing `node_modules` and reinstalling: `rm -rf node_modules && npm install`

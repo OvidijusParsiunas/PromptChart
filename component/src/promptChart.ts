@@ -7,28 +7,11 @@ import {DemoDataGenerator} from './demoDataGenerator.js';
 import {Property} from './utils/decorators/property.js';
 import {ChartRenderer} from './chartRenderer.js';
 import {StateRenderer} from './stateRenderer.js';
+import {StateText} from './types/stateText.js';
 import {CustomStyle} from './types/style.js';
 import {Connect} from './types/connect.js';
 import {styles} from './styles.js';
 
-/**
- * PromptChart Web Component
- *
- * A custom element that converts natural language prompts into charts.
- *
- * @example
- * ```html
- * <prompt-chart prompt="Show monthly sales for 2024"></prompt-chart>
- *
- * <script>
- *   document.querySelector('prompt-chart').connect = {
- *     url: 'http://localhost:3000/api/chart',
- *     method: 'POST',
- *     headers: { 'Authorization': 'Bearer token' }
- *   };
- * </script>
- * ```
- */
 export class PromptChart extends InternalHTML {
   @Property('object')
   connect?: Connect;
@@ -60,6 +43,9 @@ export class PromptChart extends InternalHTML {
   @Property('object')
   data?: ChartResponseInput;
 
+  @Property('object')
+  stateText?: StateText;
+
   _hasBeenRendered = false;
 
   private readonly _shadow: ShadowRoot;
@@ -88,6 +74,7 @@ export class PromptChart extends InternalHTML {
   override onRender() {
     GoogleFont.attemptAppendStyleSheetToHead(this.style);
     WebComponentStyleUtils.applyDefaultStyleToComponent(this.style, this.containerStyle);
+    if (this.stateText) this._stateRenderer.setStateText(this.stateText);
     this._hasBeenRendered = true;
   }
 
@@ -220,4 +207,4 @@ declare global {
   }
 }
 
-export {ChartRenderer, type ChartResponse, type ChartResponseInput};
+export {ChartRenderer, type ChartResponse, type ChartResponseInput, type StateText};

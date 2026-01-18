@@ -1,4 +1,5 @@
 import {type ChartResponseInput} from './types/response.js';
+import {type StateText} from './types/stateText.js';
 import {ChartRenderer} from './chartRenderer.js';
 
 /**
@@ -8,24 +9,32 @@ import {ChartRenderer} from './chartRenderer.js';
 export class StateRenderer {
   private readonly _container: HTMLDivElement;
   private _chartRenderers: ChartRenderer[] = [];
+  private _stateText: StateText;
 
-  constructor(container: HTMLDivElement) {
+  constructor(container: HTMLDivElement, stateText?: StateText) {
     this._container = container;
+    this._stateText = stateText ?? {};
+  }
+
+  setStateText(stateText: StateText): void {
+    this._stateText = stateText;
   }
 
   renderEmptyState(): void {
+    const text = this._stateText.empty ?? 'Set a prompt to generate a chart';
     this._container.innerHTML = `
       <div class="empty-state">
-        <span>Set a prompt to generate a chart</span>
+        <span>${this._escapeHtml(text)}</span>
       </div>
     `;
   }
 
   showLoading(): void {
+    const text = this._stateText.loading ?? 'Generating chart...';
     this._container.innerHTML = `
       <div class="loading-overlay">
         <div class="spinner"></div>
-        <div class="loading-text">Generating chart...</div>
+        <div class="loading-text">${this._escapeHtml(text)}</div>
       </div>
       <div class="chart-wrapper">
         <canvas></canvas>
@@ -34,11 +43,12 @@ export class StateRenderer {
   }
 
   showError(message: string, onRetry: () => void): void {
+    const retryText = this._stateText.retry ?? 'Retry';
     this._container.innerHTML = `
       <div class="error-container">
         <div class="error-icon">!</div>
         <div class="error-message">${this._escapeHtml(message)}</div>
-        <button class="retry-button">Retry</button>
+        <button class="retry-button">${this._escapeHtml(retryText)}</button>
       </div>
     `;
 
