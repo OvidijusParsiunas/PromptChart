@@ -1,141 +1,82 @@
-# Node.js + Express Backend Example
+## Node.js + Express Backend Example
 
 A complete Express backend for PromptChart that converts natural language prompts into chart specifications using OpenAI.
 
-## Structure
+### 🚀 Quick Start
 
-```
-node/express/
-├── src/
-│   ├── adapters/       # Data adapters (mock data)
-│   ├── llm/            # OpenAI integration
-│   ├── routes/         # API endpoints
-│   ├── services/       # Intent resolver
-│   ├── types/          # TypeScript types
-│   ├── validation/     # Schema validation
-│   └── index.ts        # Server entry point
-├── schemas/            # JSON schemas for validation
-├── package.json
-├── tsconfig.json
-└── .env.example
-```
-
-## Setup
-
-### 1. Install Dependencies
+Get running in 3 commands:
 
 ```bash
 npm install
-```
-
-### 2. Configure Environment
-
-```bash
-cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
-```
-
-### 3. Start the Server
-
-```bash
-# Development mode (with hot reload)
+cp .env.example .env   # Add your OPENAI_API_KEY
 npm run dev
-
-# Production mode
-npm run build
-npm start
 ```
 
-The server runs on `http://localhost:3000` by default.
+That's it. Your server is live at `http://localhost:3000`.
 
-## API Endpoints
+### 🖥️ Using with the UI
 
-### Generate Chart
+This backend is designed to work with the [UI example](../../ui/README.md) which calls the `http://localhost:3000/api/chart` endpoint.
 
-```
-POST /api/chart
-```
+### 🔌 Add to existing server
 
-Generate a chart from a natural language prompt.
-
-**Request:**
-
-```json
-{
-  "prompt": "Show monthly sales by region as a bar chart"
-}
-```
-
-**Response:**
-
-```json
-{
-  "chartSpec": {
-    "type": "bar",
-    "title": "Monthly Sales by Region",
-    "xAxis": { "label": "region" },
-    "yAxis": { "label": "sum(amount)" },
-    "legend": { "position": "top", "display": true }
-  },
-  "data": {
-    "labels": ["North", "South"],
-    "datasets": [...]
-  },
-  "metadata": {
-    "generatedAt": "2024-01-15T10:30:00.000Z",
-    "dataset": "sales",
-    "recordCount": 2
-  }
-}
-```
-
-### List Datasets
-
-```
-GET /api/chart/datasets
-```
-
-Returns available datasets.
-
-### Health Check
-
-```
-GET /health
-```
-
-Returns server health status.
-
-## Example Requests
+**1. Install dependencies:**
 
 ```bash
-# Generate a chart
-curl -X POST http://localhost:3000/api/chart \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "Show monthly sales by region"}'
-
-# List datasets
-curl http://localhost:3000/api/chart/datasets
-
-# Health check
-curl http://localhost:3000/health
+npm install openai dotenv
 ```
 
-## Available Datasets
+**2. Copy these files to your project:**
 
-The mock adapter includes:
+```
+src/llm/openai.ts
+src/adapters/mock.ts         # or write your own
+src/services/intent-resolver.ts
+src/routes/chart.ts
+src/types/index.ts
+```
 
-- **sales** - Monthly sales with regions and categories
-- **users** - User signups and activity
-- **products** - Product revenue and profit
-- **orders** - Order status and amounts
-- **inventory** - Stock levels
+**3. Register the router in your Express app (e.g., `index.ts`):**
 
-## Using with the UI Example
+```typescript
+import {OpenAIProvider} from './llm/openai.js';
+import {MockDataAdapter} from './adapters/mock.js'; // Replace with your adapter
+import {IntentResolver} from './services/intent-resolver.js';
+import {createChartRouter} from './routes/chart.js';
 
-This backend is designed to work with the React UI example in `../ui/`.
+const intentResolver = new IntentResolver({
+  llmProvider: new OpenAIProvider({apiKey: process.env.OPENAI_API_KEY}),
+  dataAdapter: new MockDataAdapter(), // Swap for your real data
+});
 
-1. Start this backend server on port 3000
-2. Start the UI example on port 3001 (or any other port)
-3. The UI will call `http://localhost:3000/api/chart`
+app.use('/api/chart', createChartRouter(intentResolver));
+```
 
-See `../ui/README.md` for UI setup instructions.
+Done. Your app now has a `POST /api/chart` endpoint.
+
+### 🗄️ Data Adapter
+
+This server uses a mock adapter (`src/adapters/mock.ts`). To connect your own data, implement the `DataAdapter` interface:
+
+```typescript
+interface DataAdapter {
+  getAvailableDatasets(): string[];
+  getAvailableMetrics(dataset: string): string[];
+  getAvailableDimensions(dataset: string): string[];
+  executeQuery(intent: ChartIntent): Promise<ChartData>;
+}
+```
+
+The first three methods tell the LLM what's queryable. The last one runs the actual query and returns Chart.js-compatible data.
+
+### 🤖 LLM Provider
+
+This server uses OpenAI (`src/llm/openai.ts`). To use a different LLM, implement the `LLMProvider` interface:
+
+```typescript
+interface LLMProvider {
+  generateIntent(prompt: string, context: IntentContext): Promise<IntentResult>;
+}
+```
+
+The method receives the user's prompt plus context (available datasets, metrics, dimensions) and must return a parsed `ChartIntent`. See `OpenAIProvider` in `src/llm/openai.ts` for an example implementation.

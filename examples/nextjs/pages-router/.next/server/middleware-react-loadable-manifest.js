@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST="{\"pages/index.tsx -> prompt-chart-react\":{\"id\":\"pages/index.tsx -> prompt-chart-react\",\"files\":[\"static/chunks/node_modules_prompt-chart-react_dist_promptChart_js.js\"]}}"

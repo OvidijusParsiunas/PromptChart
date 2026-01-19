@@ -39,16 +39,5 @@ export function createChartRouter(resolver: IntentResolver): Router {
     }
   });
 
-  /**
-   * GET /api/chart/datasets
-   * List available datasets
-   */
-  router.get('/datasets', (_req: Request, res: Response) => {
-    // This would come from the adapter, but for simplicity we hardcode it
-    res.json({
-      datasets: ['sales', 'users', 'products', 'orders', 'inventory'],
-    });
-  });
-
   return router;
 }

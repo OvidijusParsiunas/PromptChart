@@ -1,0 +1,62 @@
+## Next.js Pages Router Example
+
+A full-stack Next.js example using the Pages Router with integrated backend API and [prompt-chart-react](https://www.npmjs.com/package/prompt-chart-react).
+
+### 🚀 Quick Start
+
+```bash
+npm install
+cp .env.example .env.local   # Add your OPENAI_API_KEY
+npm run dev
+```
+
+That's it. Open `http://localhost:3000`.
+
+### 📦 Using prompt-chart-react
+
+```tsx
+import dynamic from 'next/dynamic';
+import type {PromptChart as PromptChartType} from 'prompt-chart';
+
+// Dynamic import with SSR disabled (web components need browser APIs)
+const PromptChart = dynamic(() => import('prompt-chart-react').then((mod) => mod.PromptChart), {ssr: false});
+
+export default function Page() {
+  const chartRef = useRef<PromptChartType | null>(null);
+
+  return <PromptChart ref={chartRef} connect={{url: '/api/chart'}} />;
+}
+```
+
+**Key Points:**
+
+- Dynamic import with `ssr: false` is required (web components need browser APIs)
+- Use `ref` to access chart methods like `fetchChart()`
+- API routes use `NextApiRequest`/`NextApiResponse` types
+
+### 🗄️ Data Adapter
+
+This server uses a mock adapter (`src/lib/adapters.ts`). To connect your own data, implement the `DataAdapter` interface:
+
+```typescript
+interface DataAdapter {
+  getAvailableDatasets(): string[];
+  getAvailableMetrics(dataset: string): string[];
+  getAvailableDimensions(dataset: string): string[];
+  executeQuery(intent: ChartIntent): ChartData;
+}
+```
+
+The first three methods tell the LLM what's queryable. The last one runs the actual query and returns Chart.js-compatible data.
+
+### 🤖 LLM Provider
+
+This server uses OpenAI (`src/lib/llm.ts`). To use a different LLM, implement the `LLMProvider` interface:
+
+```typescript
+interface LLMProvider {
+  generateIntent(prompt: string, context: IntentContext): Promise<ChartIntent>;
+}
+```
+
+The method receives the user's prompt plus context (available datasets, metrics, dimensions) and must return a parsed `ChartIntent`. See `OpenAIProvider` in `src/lib/llm.ts` for an example implementation.
