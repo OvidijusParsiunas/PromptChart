@@ -56,9 +56,15 @@ const config: Config = {
         },
         {
           type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
           position: 'left',
           label: 'Docs',
+          sidebarId: 'docs',
+        },
+        {
+          type: 'docSidebar',
+          position: 'left',
+          label: 'Examples',
+          sidebarId: 'examples',
         },
         {
           href: 'https://github.com/OvidijusParsiunas/PromptChart',
