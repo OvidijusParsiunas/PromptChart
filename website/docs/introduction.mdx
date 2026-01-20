@@ -1,0 +1,40 @@
+---
+sidebar_position: 0
+---
+
+# Introduction
+
+## PromptChart
+
+PromptChart is a framework-agnostic system that converts natural language into data visualizations.
+
+### Architecture
+
+The data flow is simple, PromptChart [web component](/docs/components) sends a prompt to the [backend](/docs/examples), which then sends it to an LLM to generate structured intent.
+The backend then executes the query against your data source and returns chart-ready data that is rendered by the web component.
+
+```
+┌──────────────┐   prompt    ┌──────────────┐   intent   ┌──────────────┐
+│  PromptChart │ ─────────►  │    Backend   │ ─────────► │     LLM      │
+│  Component   │             │    Service   │            │   Provider   │
+└──────────────┘             └──────────────┘            └──────────────┘
+       ▲                            │
+       │                            ▼
+       │     chart data      ┌──────────────┐
+       └──────────────────── │ Data Adapter │
+                             └──────────────┘
+```
+
+1. User enters a natural language prompt (e.g., "Show sales by region")
+2. Your backend sends the prompt to an LLM to generate structured intent
+3. A data adapter executes the query against your data source
+4. Chart-ready data is returned and rendered
+
+### Open Source
+
+PromptChart is built by the community, for the community. All contributions are welcome!
+If you have suggestions, ideas, or found a bug, please create an [issue](https://github.com/OvidijusParsiunas/PromptChart/issues).
+
+import BrowserOnly from '@docusaurus/BrowserOnly';
+
+<BrowserOnly>{() => require('@site/src/components/nav/autoNavToggle').readdAutoNavShadowToggle()}</BrowserOnly>

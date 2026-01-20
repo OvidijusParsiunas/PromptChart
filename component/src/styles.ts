@@ -9,6 +9,7 @@ export const styles = `
     width: 100%;
     height: 100%;
     min-height: 300px;
+    background-color: inherit;
   }
 
   .chart-wrapper {
@@ -42,7 +43,7 @@ export const styles = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.9);
+    background-color: inherit;
     z-index: 10;
   }
 

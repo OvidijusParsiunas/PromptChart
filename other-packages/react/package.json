@@ -23,12 +23,12 @@
   "author": "Ovidijus Parsiunas",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OvidijusParsiunas/prompt-chart.git"
+    "url": "git+https://github.com/OvidijusParsiunas/PromptChart.git"
   },
   "bugs": {
-    "url": "https://github.com/OvidijusParsiunas/prompt-chart/issues"
+    "url": "https://github.com/OvidijusParsiunas/PromptChart/issues"
   },
-  "homepage": "https://github.com/OvidijusParsiunas/prompt-chart",
+  "homepage": "https://github.com/OvidijusParsiunas/PromptChart",
   "license": "MIT",
   "dependencies": {
     "@lit/react": "^1.0.8",

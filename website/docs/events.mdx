@@ -1,0 +1,30 @@
+---
+sidebar_position: 5
+title: Events
+---
+
+## onChartLoaded
+
+- Type: `(data: ChartResponse) => void`
+
+Callback fired when the chart is successfully loaded.
+
+```js
+chartElementRef.onChartLoaded = (data) => {
+  console.log('Chart loaded:', data);
+};
+```
+
+---
+
+## onChartError
+
+- Type: `() => void`
+
+Callback fired when an error occurs during chart loading.
+
+```js
+chartElementRef.onChartError = () => {
+  console.error('Failed to load chart');
+};
+```
