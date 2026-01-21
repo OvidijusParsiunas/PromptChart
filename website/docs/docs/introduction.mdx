@@ -4,6 +4,8 @@ sidebar_position: 0
 
 # Introduction
 
+import architecture from '/img/architecture.png';
+
 ## PromptChart
 
 PromptChart is a framework-agnostic system that converts natural language into data visualizations.
@@ -13,20 +15,10 @@ PromptChart is a framework-agnostic system that converts natural language into d
 The data flow is simple, PromptChart [web component](/docs/components) sends a prompt to the [backend](/docs/examples), which then sends it to an LLM to generate structured intent.
 The backend then executes the query against your data source and returns chart-ready data that is rendered by the web component.
 
-```
-┌──────────────┐   prompt    ┌──────────────┐   intent   ┌──────────────┐
-│  PromptChart │ ─────────►  │    Backend   │ ─────────► │     LLM      │
-│  Component   │             │    Service   │            │   Provider   │
-└──────────────┘             └──────────────┘            └──────────────┘
-       ▲                            │
-       │                            ▼
-       │     chart data      ┌──────────────┐
-       └──────────────────── │ Data Adapter │
-                             └──────────────┘
-```
+<img src={architecture} alt="Architecture" style={{maxWidth: '100%', height: 'auto'}} />
 
-1. User enters a natural language prompt (e.g., "Show sales by region")
-2. Your backend sends the prompt to an LLM to generate structured intent
+1. `prompt-chart` component sends a natural language prompt (e.g., "Show sales by region")
+2. Backend sends the prompt to an LLM to generate structured intent
 3. A data adapter executes the query against your data source
 4. Chart-ready data is returned and rendered
 

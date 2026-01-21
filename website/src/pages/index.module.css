@@ -174,7 +174,7 @@
 
 .examplesLabel {
   font-size: 0.75rem;
-  color: var(--ifm-color-emphasis-600);
+  color: var(--ifm-color-emphasis-700);
   margin-bottom: 0.75rem;
   display: block;
   text-transform: uppercase;
@@ -258,7 +258,7 @@
 
 .featuresSubtitle {
   text-align: center;
-  color: var(--ifm-color-emphasis-600);
+  color: var(--ifm-color-emphasis-700);
   margin-bottom: 3rem;
   font-size: 1.0625rem;
 }
