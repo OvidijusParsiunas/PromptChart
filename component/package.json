@@ -1,6 +1,6 @@
 {
   "name": "prompt-chart",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Web component for LLM-driven chart generation",
   "type": "module",
   "main": "./dist/promptChart.js",
