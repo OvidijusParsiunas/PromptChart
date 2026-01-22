@@ -3,9 +3,9 @@ sidebar_position: 4
 title: Interceptors
 ---
 
-## requestInterceptor
+### `requestInterceptor`
 
-- Type: `(request: RequestDetails) => RequestDetails | Promise<RequestDetails>`
+- Type: (request: [`RequestDetails`](#requestdetails)) => [`RequestDetails`](#requestdetails) | [`Promise<RequestDetails>`](#requestdetails)
 
 Function to intercept and modify outgoing requests before they are sent.
 
@@ -31,9 +31,9 @@ interface RequestDetails {
 
 ---
 
-## responseInterceptor
+### `responseInterceptor`
 
-- Type: `(response: unknown) => ChartResponse | Promise<ChartResponse>`
+- Type: (response: unknown) => [`ChartResponse`](/docs/data#chartresponse) | [`Promise<ChartResponse>`](/docs/data#chartresponse)
 
 Function to intercept and transform incoming responses before the chart is rendered.
 

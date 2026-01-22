@@ -1,6 +1,6 @@
 ## React UI Example
 
-This is an example [PromptChat](https://www.npmjs.com/package/prompt-chartt) UI project that can be used to communicate with the example servers.
+This is an example [PromptChat](https://www.npmjs.com/package/prompt-chart) UI project that can be used to communicate with the example servers.
 
 ### 🚀 Quick Start
 
