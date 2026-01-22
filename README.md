@@ -53,6 +53,14 @@ Use the [llms.txt](https://github.com/OvidijusParsiunas/deep-chat/blob/main/llms
 "Use https://github.com/OvidijusParsiunas/deep-chat/blob/main/llms.txt to add a chat component to my website."
 ```
 
+### :globe_with_meridians: Documentation
+
+Make sure to checkout the official [website](https://promptchart.live) for more information!
+
+<p align="center">
+    <img width="750" src="https://github.com/user-attachments/assets/60cb47d3-e253-4d89-a9dd-8fb8fe369a0a" alt="Expanded View">
+</p>
+
 ## :heart: Contributions
 
 Open source is built by the community for the community. All contributions to this project are welcome!<br>
