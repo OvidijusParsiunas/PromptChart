@@ -17,7 +17,7 @@ The backend then executes the query against your data source and returns chart-r
 
 <img src={architecture} alt="Architecture" style={{maxWidth: '100%', height: 'auto'}} />
 
-1. `prompt-chart` component sends a natural language prompt (e.g., "Show sales by region")
+1. [prompt-chart](https://www.npmjs.com/package/prompt-chart) component sends a natural language prompt (e.g., "Show sales by region")
 2. Backend sends the prompt to an LLM to generate structured intent
 3. A data adapter executes the query against your data source
 4. Chart-ready data is returned and rendered

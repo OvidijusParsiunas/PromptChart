@@ -67,7 +67,7 @@ The method receives the user's prompt plus context (available datasets, metrics,
 
 <img width="2562" height="808" alt="architecture" src="https://github.com/user-attachments/assets/8b62da40-2260-4053-a077-bae62a956ba5" />
 
-1. `prompt-chart` component sends a natural language prompt (e.g., "Show sales by region")
+1. [prompt-chart](https://www.npmjs.com/package/prompt-chart) component sends a natural language prompt (e.g., "Show sales by region")
 2. Backend sends the prompt to an LLM to generate structured intent
 3. A data adapter executes the query against your data source
 4. Chart-ready data is returned and rendered

@@ -1,239 +1,59 @@
-# PromptChart
-
-Turn natural language into validated data queries and charts.
+![alt text](./resources/readme/cover3.png)
 
 PromptChart is an open-source, framework-agnostic system that converts natural language prompts into safe, on-demand data visualizations.
 
 ## How It Works
 
-```
-User Prompt → LLM → Validated JSON Intent → Data Adapter → Chart
-```
+<img width="2562" height="808" alt="architecture" src="https://github.com/user-attachments/assets/8b62da40-2260-4053-a077-bae62a956ba5" />
 
-1. **User describes what they want** in natural language
-2. **LLM translates intent** into a strict, schema-validated JSON specification
-3. **Backend resolves data** via pluggable adapters (mock, SQL, API, etc.)
-4. **Frontend renders charts** using Chart.js
+1. [prompt-chart](https://www.npmjs.com/package/prompt-chart) component sends a natural language prompt (e.g., "Show sales by region")
+2. Backend sends the prompt to an LLM to generate structured intent
+3. A data adapter executes the query against your data source
+4. Chart-ready data is returned and rendered
 
-The LLM never accesses databases directly, writes SQL, or generates code. All execution is deterministic and controlled.
+## :beginner: Getting started
 
-## Project Structure
+### :desktop_computer: UI
 
 ```
-promptchart/
-├── component/              # Web component (npm: prompt-chart)
-│   └── src/
-│       └── prompt-chart.ts
-│
-└── examples/
-    └── node/
-      └── express/       # Complete Node.js example
-          ├── index.html      # Demo page
-          ├── server/         # Express backend (everything included)
-          └── README.md
+npm install prompt-chart
 ```
 
-## Quick Start
+If using React, install the following instead:
 
-### 1. Build the Component
-
-```bash
-cd component
-npm install
-npm run build
+```
+npm install prompt-chart-react
 ```
 
-### 2. Run an Example
+Simply add the following to your markup:
 
-```bash
-cd examples/node/express/server
-npm install
-
-# Add your OpenAI API key
-cp .env.example .env
-# Edit .env and add OPENAI_API_KEY
-
-# Start the server
-npm run dev
+```
+<prompt-chart></prompt-chart>
 ```
 
-### 3. Open the Demo
+The exact syntax for the above will vary depending on the framework of your choice. Check out live codepen examples for your [UI framework/library](https://promptchart.live/docs/examples/frameworks) of choice:
 
-Open `examples/node/express/index.html` in your browser and try:
+| React                                                                                                                                                            | Vue 2                                                                                                                                                                     | Vue 3                                                                                                                                                         | Svelte                                                                                                                                                                | SvelteKit                                                                                                                                                                                                        | Angular                                                                                                                                                                               | Solid                                                                                                                                                            | Next                                                                                                                                        | Nuxt                                                                                                                                                   | VanillaJS                                                                                                                                                                                                               |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <a href="https://stackblitz.com/edit/deep-chat-react-468spn2s?file=src%2FApp.tsx" target="_blank"><img src="./website/static/img/reactLogo.png" width="60"/></a> | <a href="https://codesandbox.io/p/devbox/deep-chat-vue2-forked-rxcy86?file=%2Fsrc%2FApp.vue" target="_blank"><img src="./website/static/img/vueLogo.png" width="60"/></a> | <a href="https://stackblitz.com/edit/deep-chat-vue3-6etgvs4q?file=src%2FApp.vue" target="_blank"><img src="./website/static/img/vueLogo.png" width="60"/></a> | <a href="https://stackblitz.com/edit/deep-chat-svelte-y3ifpfp4?file=src%2FApp.svelte" target="_blank"><img src="./website/static/img/svelteLogo.png" width="45"/></a> | <div align="center"><a href="https://stackblitz.com/edit/deep-chat-sveltekit-cqtewnry?file=src%2Froutes%2F%2Bpage.svelte" target="_blank" ><img src="./website/static/img/svelteLogo.png" width="45"/></a></div> | <a href="https://stackblitz.com/edit/stackblitz-starters-csgenhfe?file=src%2Fapp%2Fapp.component.ts" target="_blank"><img src="./website/static/img/angularLogo.png" width="66"/></a> | <a href="https://stackblitz.com/edit/deep-chat-solid-dwzgu9ud?file=src%2FApp.tsx" target="_blank"><img src="./website/static/img/solidLogo.png" width="60"/></a> | <a href="https://promptchart.live/docs/examples/servers#next" target="_blank"><img src="./website/static/img/nextLogo.png" width="60"/></a> | <a href="https://stackblitz.com/edit/nuxt-starter-oxcelpwt?file=app.vue" target="_blank"><img src="./website/static/img/nuxtLogo.png" width="70"/></a> | <a href="https://codesandbox.io/p/devbox/deep-chat-vanillajs-forked-nrt2f2?file=%2Findex.html&workspaceId=ws_M7pk1beYa89Bp9RcGEAbDe" target="_blank"><img src="./website/static/img/vanillaJSLogo.png" width="60"/></a> |
 
-- "Show monthly sales by region"
-- "User signups trend as a line chart"
-- "Product revenue breakdown as a pie chart"
+### :gear: Backend
 
-## Web Component Usage
+This repository has multiple examples for various backend frameworks. See the [examples](./examples) directory. All of the examples have been configured to automatically work with the [ui](./examples/ui) project:
 
-```html
-<!-- Include the component -->
-<script type="module" src="path/to/prompt-chart.js"></script>
+| Express                                                                                                            | Nest                                                                                                           | Flask                                                                                                            | FastAPI                                                                                                                                        | Spring                                                                                                                   | Go                                                                                                  | SvelteKit                                                                                                                                 | Next                                                                                                      | .NET                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| <a href="./examples/node/express" target="_blank"><img src="./website/static/img/expressLogo.png" width="60"/></a> | <a href="./examples/node/nestjs" target="_blank"><img src="./website/static/img/nestLogo.png" width="60"/></a> | <a href="./examples/python/flask" target="_blank"><img src="./website/static/img/flaskLogo.png" width="60"/></a> | <div align="center"><a href="./examples/python/fastapi" target="_blank"><img src="./website/static/img/fastapiLogo.png" width="44"/></a></div> | <a href="./examples/java/springboot" target="_blank"><img src="./website/static/img/springBootLogo.png" width="50"/></a> | <a href="./examples/go" target="_blank"><img src="./website/static/img/goLogo.png" width="40"/></a> | <div align="center"><a href="./examples/sveltekit" target="_blank" ><img src="./website/static/img/svelteLogo.png" width="45"/></a></div> | <a href="./examples/nextjs" target="_blank"><img src="./website/static/img/nextLogo.png" width="55"/></a> | <div align="center"><a href="./examples/dotnet" target="_blank"><img src="./website/static/img/netLogo.png" width="70"/></a></div> |
 
-<!-- Use it -->
-<prompt-chart prompt="Show monthly sales"></prompt-chart>
+### :robot: Install with AI
 
-<script>
-  document.querySelector('prompt-chart').connect = {
-    url: 'http://localhost:3000/api/chart',
-    method: 'POST',
-    headers: {Authorization: 'Bearer token'},
-  };
-</script>
+Use the [llms.txt](https://github.com/OvidijusParsiunas/deep-chat/blob/main/llms.txt) file as a reference for installing and configuring PromptChart with your code assistant:
+
+```
+"Use https://github.com/OvidijusParsiunas/deep-chat/blob/main/llms.txt to add a chat component to my website."
 ```
 
-### Properties
+## :heart: Contributions
 
-| Property              | Type       | Description                                     |
-| --------------------- | ---------- | ----------------------------------------------- |
-| `connect`             | `object`   | Connection config: `{ url, method?, headers? }` |
-| `prompt`              | `string`   | Natural language chart description              |
-| `autoFetch`           | `boolean`  | Automatically fetch when prompt changes         |
-| `data`                | `object`   | Directly set chart data (bypasses fetch)        |
-| `demo`                | `boolean`  | Use demo mode with generated data               |
-| `stateText`           | `object`   | Custom text: `{ empty?, loading?, retry? }`     |
-| `containerStyle`      | `object`   | Custom CSS styles for the container             |
-| `requestInterceptor`  | `function` | Modify request before sending                   |
-| `responseInterceptor` | `function` | Transform response before rendering             |
-
-### Events & Callbacks
-
-| Event/Callback  | Description                    |
-| --------------- | ------------------------------ |
-| `chart-loaded`  | Event fired when chart renders |
-| `chart-error`   | Event fired on error           |
-| `onChartLoaded` | Callback when chart renders    |
-| `onChartError`  | Callback on error              |
-
-### JavaScript API
-
-```javascript
-const chart = document.querySelector('prompt-chart');
-
-// Configure connection
-chart.connect = {url: 'http://localhost:3000/api/chart'};
-
-// Set prompt and fetch
-chart.prompt = 'Show sales by category';
-await chart.fetchChart();
-
-// Use callbacks
-chart.onChartLoaded = (data) => {
-  console.log('Chart data:', data);
-};
-
-// Or listen for events
-chart.addEventListener('chart-loaded', (e) => {
-  console.log('Chart data:', e.detail);
-});
-
-// Use interceptors
-chart.requestInterceptor = (request) => {
-  request.headers['X-Custom-Header'] = 'value';
-  return request;
-};
-
-chart.responseInterceptor = (response) => {
-  // Transform response if needed
-  return response;
-};
-```
-
-## API Reference
-
-### POST /api/chart
-
-Generate a chart from a natural language prompt.
-
-**Request:**
-
-```json
-{
-  "prompt": "Show monthly sales by region",
-  "context": {}
-}
-```
-
-**Response:**
-
-```json
-{
-  "chartSpec": {
-    "type": "bar",
-    "title": "Monthly Sales by Region",
-    "xAxis": {"label": "month"},
-    "yAxis": {"label": "sum(amount)"}
-  },
-  "data": {
-    "labels": ["Jan", "Feb", "Mar"],
-    "datasets": [
-      {
-        "label": "North",
-        "data": [45000, 52000, 48000]
-      }
-    ]
-  },
-  "metadata": {
-    "generatedAt": "2024-01-15T10:30:00Z",
-    "dataset": "sales",
-    "recordCount": 12
-  }
-}
-```
-
-## Intent Schema
-
-The LLM outputs a validated JSON structure:
-
-```json
-{
-  "dataset": "sales",
-  "metrics": [{"field": "amount", "aggregation": "sum"}],
-  "dimensions": [{"field": "month"}],
-  "filters": [{"field": "year", "operator": "eq", "value": 2024}],
-  "chartType": "bar",
-  "title": "Monthly Sales"
-}
-```
-
-All fields are enum-based and validated against a strict JSON Schema.
-
-## Creating Your Own Backend
-
-Each example contains a complete backend. To create your own:
-
-1. Copy an example (e.g., `examples/node/express/`)
-2. Implement the `DataAdapter` interface to connect your data source
-3. Optionally swap the `LLMProvider` for a different LLM
-
-### DataAdapter Interface
-
-```typescript
-interface DataAdapter {
-  getAvailableDatasets(): Dataset[];
-  getAvailableMetrics(dataset: Dataset): string[];
-  getAvailableDimensions(dataset: Dataset): string[];
-  executeQuery(intent: ChartIntent): Promise<ChartData>;
-}
-```
-
-### LLMProvider Interface
-
-```typescript
-interface LLMProvider {
-  generateIntent(prompt: string, context: IntentContext): Promise<IntentResult>;
-}
-```
-
-## Design Principles
-
-- **Safe by default** - LLM output is always validated against strict schemas
-- **No SQL generation** - Data access is through controlled adapters
-- **Framework agnostic** - Works with any frontend framework
-- **Self-contained examples** - Each example has everything you need
-- **Self-hostable** - Run entirely on your own infrastructure
-
-## License
-
-MIT
+Open source is built by the community for the community. All contributions to this project are welcome!<br>
+Additionally, if you have any suggestions for enhancements, ideas on how to take the project further or have discovered a bug, do not hesitate to create a new issue ticket and we will look into it as soon as possible!
