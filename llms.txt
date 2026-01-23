@@ -1,0 +1,209 @@
+# PromptChart - LLM Reference
+
+Web component (`prompt-chart`) and React wrapper (`prompt-chart-react`) for AI-powered data visualizations from natural language prompts.
+
+## Installation
+```bash
+npm install prompt-chart
+npm install prompt-chart-react
+```
+
+## Frontend Component
+
+### Basic Usage
+```html
+<prompt-chart connect='{"url": "/api/chart"}' prompt="Show sales by region"></prompt-chart>
+```
+
+### Properties
+```typescript
+connect: {
+  url?: string
+  method?: string  // default: "POST"
+  headers?: Record<string, string>  // default: {"Content-Type": "application/json"}
+}
+
+prompt?: string  // Natural language query
+data?: ChartResponse | ChartResponse[]  // Direct data (bypasses API)
+demo?: boolean  // Enable client-side mock data mode
+autoFetch?: boolean  // Auto-fetch on mount
+
+containerStyle?: CustomStyle  // CSS styles for container
+stateText?: {empty?: string, loading?: string, retry?: string}
+
+requestInterceptor?: (request: RequestDetails) => RequestDetails | Promise<RequestDetails>
+responseInterceptor?: (response: unknown) => ChartResponseInput | Promise<ChartResponseInput>
+onChartLoaded?: (data: ChartResponseInput) => void
+onChartError?: () => void
+```
+
+### Methods
+```typescript
+fetchChart(): Promise<void>
+```
+
+### Events
+```typescript
+chart-loaded: CustomEvent<ChartResponseInput>
+chart-error: CustomEvent<{error: string}>
+```
+
+### Types
+```typescript
+RequestDetails: {
+  endpoint: string
+  method: string
+  headers: Record<string, string>
+  body: unknown
+}
+
+CustomStyle: {
+  [K in keyof CSSStyleDeclaration as CSSStyleDeclaration[K] extends string ? K : never]?: string
+}  // e.g., {backgroundColor: "#fff", padding: "10px"}
+
+ChartResponseInput: ChartResponse | ChartResponse[]
+```
+
+## Backend API
+
+### Endpoint: `POST /api/chart`
+
+**Request:**
+```typescript
+{prompt: string, context?: Record<string, any>}
+```
+
+**Response:**
+```typescript
+ChartResponse: {
+  chartSpec: ChartSpec
+  data: ChartData
+  metadata?: {generatedAt: string, dataset: string, recordCount: number}
+}
+
+ChartSpec: {
+  type: string       // Supported: 'bar', 'line', 'pie', 'doughnut', 'scatter', 'area'
+  title: string
+  xAxis?: {label?: string, type?: string}   // type: 'category', 'time', 'linear'
+  yAxis?: {label?: string, type?: string}   // type: 'linear', 'logarithmic'
+  legend?: {position?: 'top' | 'bottom' | 'left' | 'right', display?: boolean}
+}
+
+ChartData: {
+  labels: string[]
+  datasets: Array<{
+    label: string
+    data: number[]
+    backgroundColor?: string | string[]
+    borderColor?: string | string[]
+    borderWidth?: number
+  }>
+}
+```
+
+### Health Check: `GET /health`
+```json
+{"status": "ok", "timestamp": "2024-01-22T20:00:00.000Z"}
+```
+
+## Intent Schema (LLM Output)
+
+LLM generates validated JSON intent - never SQL or chart code.
+
+```typescript
+ChartIntent: {
+  dataset: string      // Must match available dataset from data adapter
+  metrics: Array<{
+    field: string      // Must match available metric for the dataset
+    aggregation: 'sum' | 'avg' | 'min' | 'max' | 'count'
+    label?: string
+  }>
+  dimensions?: Array<{
+    field: string      // Must match available dimension for the dataset
+    granularity?: 'day' | 'week' | 'month' | 'quarter' | 'year'
+  }>
+  filters?: Array<{
+    field: string      // Must match available metric or dimension
+    operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'between'
+    value: string | number | string[] | number[]
+  }>
+  chartType: 'bar' | 'line' | 'pie' | 'doughnut' | 'area' | 'scatter'
+  title?: string
+  sortBy?: 'value' | 'label' | 'date'
+  sortOrder?: 'asc' | 'desc'
+  limit?: number  // 1-100
+}
+```
+
+**Example datasets/metrics/dimensions (from mock data adapter):**
+- `sales`: metrics=[amount, quantity, revenue], dimensions=[month, quarter, year, region, category]
+- `users`: metrics=[signups, activeUsers, sessions], dimensions=[month, year, channel]
+- `products`: metrics=[price, quantity, revenue, cost, profit], dimensions=[product, category]
+- `orders`: metrics=[count, amount], dimensions=[month, status, region]
+
+Note: Actual available values are provided to the LLM via `IntentContext` from the data adapter.
+
+## Data Adapter Interface
+
+Backend implements pluggable data adapters:
+
+```typescript
+interface DataAdapter {
+  GetAvailableDatasets(): string[]
+  GetAvailableMetrics(dataset: string): string[]
+  GetAvailableDimensions(dataset: string): string[]
+  ExecuteQuery(intent: ChartIntent): ChartData
+}
+```
+
+## LLM Provider Interface
+
+```typescript
+interface LLMProvider {
+  GenerateIntent(context: RequestContext, prompt: string, intentContext: IntentContext): Promise<ChartIntent>
+}
+
+IntentContext: {
+  datasets: Record<string, {metrics: string[], dimensions: string[]}>
+  availableChartTypes: string[]
+}
+```
+
+## Architecture Flow
+
+1. User inputs prompt in `<prompt-chart>`
+2. Component calls `POST /api/chart` with `{prompt, context}`
+3. Backend passes prompt to LLM with available datasets
+4. LLM generates `ChartIntent` JSON (schema-validated)
+5. Backend executes intent via data adapter
+6. Returns `ChartResponse` with chart spec and data
+7. Frontend renders using Chart.js
+
+## Backend Examples
+
+All examples in `/examples` directory follow same pattern:
+
+- **Node.js**: `/examples/node` - Express, NestJS
+- **Python**: `/examples/python` - Flask, FastAPI
+- **Go**: `/examples/go`
+- **Java**: `/examples/java` - Spring Boot
+- **.NET**: `/examples/dotnet`
+- **Next.js**: `/examples/nextjs` - App Router & Pages Router
+- **SvelteKit**: `/examples/sveltekit`
+
+## Environment Variables
+```
+OPENAI_API_KEY=sk-...  # Required for LLM
+OPENAI_MODEL=gpt-4o-mini  # Default model
+PORT=3000  # Server port
+```
+
+## Security Principles
+
+- LLM generates intent JSON only (never SQL, never code)
+- All fields are enum-based and allow-listed
+- Schema validation before execution
+- Data adapter controls actual data access
+- No database schema exposure to LLM
+
+**Docs:** https://promptchart.dev/docs

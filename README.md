@@ -47,10 +47,10 @@ This repository has multiple examples for various backend frameworks. See the [e
 
 ### :robot: Install with AI
 
-Use the [llms.txt](https://github.com/OvidijusParsiunas/deep-chat/blob/main/llms.txt) file as a reference for installing and configuring PromptChart with your code assistant:
+Use the [llms.txt](https://github.com/OvidijusParsiunas/PromptChart/blob/main/llms.txt) file as a reference for installing and configuring PromptChart with your code assistant:
 
 ```
-"Use https://github.com/OvidijusParsiunas/deep-chat/blob/main/llms.txt to add a chat component to my website."
+"Use https://github.com/OvidijusParsiunas/PromptChart/blob/main/llms.txt to add a chat component to my website."
 ```
 
 ### :globe_with_meridians: Documentation

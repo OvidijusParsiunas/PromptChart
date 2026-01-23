@@ -41,6 +41,14 @@ Enables demo mode which generates mock chart data client-side without making API
 
 - Type: \{[`chartSpec: ChartSpec`](#chartspec), [`data: ChartData`](#chartdata), `metadata?: object`\}
 
+The complete response object containing chart configuration, data, and optional metadata. <br />
+`chartSpec` is the chart configuration including type, title, and axis settings. <br />
+`data` contains the actual data to be rendered in the chart. <br />
+`metadata` is an optional object with information about the data source: <br />
+&emsp; `generatedAt` is the timestamp when the data was generated. <br />
+&emsp; `dataset` is the name or identifier of the source dataset. <br />
+&emsp; `recordCount` is the number of records used to generate the chart data.
+
 ```typescript
 interface ChartResponse {
   chartSpec: ChartSpec;
@@ -57,9 +65,22 @@ interface ChartResponse {
 
 ### `ChartSpec`
 
+Defines the chart type and visual configuration. <br />
+`type` is the chart type. Supported values: `'bar'`, `'line'`, `'pie'`, `'doughnut'`, `'scatter'`, `'area'`. <br />
+`title` is the title displayed at the top of the chart. <br />
+`xAxis` is an optional x-axis configuration object: <br />
+&emsp; `label` is the label for the x-axis. <br />
+&emsp; `type` is the axis type (e.g., `'category'`, `'time'`, `'linear'`). <br />
+`yAxis` is an optional y-axis configuration object: <br />
+&emsp; `label` is the label for the y-axis. <br />
+&emsp; `type` is the axis type (e.g., `'linear'`, `'logarithmic'`). <br />
+`legend` is an optional legend configuration object: <br />
+&emsp; `position` is the legend position. Values: `'top'`, `'bottom'`, `'left'`, `'right'`. <br />
+&emsp; `display` controls whether to show the legend. Defaults to `true`.
+
 ```typescript
 interface ChartSpec {
-  type: string;
+  type: 'bar' | 'line' | 'pie' | 'doughnut' | 'scatter' | 'area';
   title: string;
   xAxis?: {label?: string; type?: string};
   yAxis?: {label?: string; type?: string};
@@ -70,6 +91,15 @@ interface ChartSpec {
 ---
 
 ### `ChartData`
+
+Contains the labels and datasets to be rendered in the chart. <br />
+`labels` is an array of labels for the x-axis or pie/doughnut segments. <br />
+`datasets` is an array of dataset objects, each representing a data series: <br />
+&emsp; `label` is the name of the dataset, displayed in the legend. <br />
+&emsp; `data` is an array of numeric values corresponding to each label. <br />
+&emsp; `backgroundColor` is the fill color(s) for the chart elements. Can be a single color or an array of colors for each data point. <br />
+&emsp; `borderColor` is the border color(s) for the chart elements. Can be a single color or an array of colors. <br />
+&emsp; `borderWidth` is the width of the border in pixels.
 
 ```typescript
 interface ChartData {
