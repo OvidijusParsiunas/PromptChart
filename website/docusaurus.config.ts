@@ -40,7 +40,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/promptchart-social-card.jpg',
+    image: 'img/social-media-preview.png',
     navbar: {
       title: 'PromptChart',
       logo: {
