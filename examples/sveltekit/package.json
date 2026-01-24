@@ -18,6 +18,6 @@
   },
   "dependencies": {
     "openai": "^4.24.0",
-    "prompt-chart": "^0.1.6"
+    "prompt-chart": "^1.0.0"
   }
 }
