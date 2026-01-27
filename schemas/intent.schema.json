@@ -103,17 +103,7 @@
         "field": {
           "type": "string",
           "description": "Field to group by",
-          "enum": [
-            "date",
-            "month",
-            "quarter",
-            "year",
-            "category",
-            "region",
-            "product",
-            "status",
-            "channel"
-          ]
+          "enum": ["date", "month", "quarter", "year", "category", "region", "product", "status", "channel"]
         },
         "granularity": {
           "type": "string",
@@ -152,10 +142,10 @@
         },
         "value": {
           "oneOf": [
-            { "type": "string" },
-            { "type": "number" },
-            { "type": "array", "items": { "type": "string" } },
-            { "type": "array", "items": { "type": "number" } }
+            {"type": "string"},
+            {"type": "number"},
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "array", "items": {"type": "number"}}
           ],
           "description": "Filter value(s)"
         }
